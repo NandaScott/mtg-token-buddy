@@ -59,7 +59,8 @@
           "Component",
           "Grid",
           "ItemBlock",
-          "Typography"
+          "Typography",
+          "Slide"
         ]
       }
     ],
@@ -76,9 +77,9 @@
     "object-curly-newline": "off",
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error"],
-    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["error"],
+    "@typescript-eslint/no-unused-vars": ["warn"],
     "no-dupe-class-members": "off",
     "@typescript-eslint/no-dupe-class-members": ["error"]
   }
