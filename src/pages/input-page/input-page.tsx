@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Box, Button, makeStyles } from '@material-ui/core';
+import { Box, Button, makeStyles, Paper } from '@material-ui/core';
 import DecklistInput from 'components/decklist-input/decklist-input';
 import CustomSnackbars from 'components/snackbars/custom-snackbars';
 import { parser, validateInput } from 'utils/utils';
@@ -10,10 +10,12 @@ import getCollection, {
 import ScryfallCard from 'interfaces/scryfall-card';
 import { AxiosError } from 'axios';
 import { InputPageProps } from 'pages/input-page/input-page-interfaces';
+import TokenDisplay from 'components/token-display/token-display';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+    backgroundColor: '#e8e8e8',
     [theme.breakpoints.down('sm')]: {
       flexDirection: 'column',
     },
@@ -22,13 +24,17 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   controls: {
-    padding: theme.spacing(4),
+    padding: theme.spacing(2),
+    margin: theme.spacing(4),
+    display: 'flex',
+    flexDirection: 'column',
     [theme.breakpoints.up('md')]: {
       width: '50%',
     },
   },
   tokens: {
     padding: theme.spacing(4),
+    width: '50%',
   },
   input: {
     marginBottom: theme.spacing(),
@@ -82,11 +88,14 @@ export default function InputPage(props: InputPageProps) {
     [inputError],
   );
 
-  const handleClear = () => setDecklist('');
+  const handleClear = () => {
+    setDecklist('');
+    setTokens([]);
+  };
 
   return (
     <div className={classes.root}>
-      <div className={classes.controls}>
+      <Paper component="div" className={classes.controls}>
         <DecklistInput
           error={inputError}
           handleInput={handleInput}
@@ -123,11 +132,9 @@ export default function InputPage(props: InputPageProps) {
           message={snackbar.message}
           snackbarControl={setSnackbar}
         />
-      </div>
+      </Paper>
       <div className={classes.tokens}>
-        {tokens.map((card) => (
-          <div>{card.name}</div>
-        ))}
+        <TokenDisplay tokens={tokens} />
       </div>
     </div>
   );

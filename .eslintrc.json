@@ -82,6 +82,7 @@
     "@typescript-eslint/no-unused-vars": ["warn"],
     "no-dupe-class-members": "off",
     "@typescript-eslint/no-dupe-class-members": ["error"],
-    "camelcase": "off"
+    "camelcase": "off",
+    "indent": "off"
   }
 }

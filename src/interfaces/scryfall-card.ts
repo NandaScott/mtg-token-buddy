@@ -70,6 +70,7 @@ export default interface ScryfallCard extends Object {
   related_uris: RelatedUris;
   released_at: string;
   reprint: boolean;
+  scryfall_uri: string;
   scryfall_set_uri: string;
   set_name: string;
   set_search_uri: string;
