@@ -1,13 +1,19 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Button, makeStyles, Paper } from '@material-ui/core';
 import DecklistInput from 'components/decklist-input/decklist-input';
 import CustomSnackbars from 'components/snackbars/custom-snackbars';
-import { parser, validateInput } from 'utils/utils';
+import {
+  flatten,
+  parser,
+  splitIntoChunks,
+  uniqueArray,
+  validateInput,
+} from 'utils/utils';
 import getCollection, {
   handleCollectionResponse,
   Identifier,
 } from 'services/scryfall';
-import ScryfallCard from 'interfaces/scryfall-card';
+import ScryfallCard, { RelatedCard } from 'interfaces/scryfall-card';
 import { AxiosError } from 'axios';
 import { InputPageProps } from 'pages/input-page/input-page-interfaces';
 import TokenDisplay from 'components/token-display/token-display';
@@ -34,7 +40,9 @@ const useStyles = makeStyles((theme) => ({
   },
   tokens: {
     padding: theme.spacing(4),
-    width: '50%',
+    [theme.breakpoints.up('md')]: {
+      width: '50%',
+    },
   },
   input: {
     marginBottom: theme.spacing(),
@@ -64,10 +72,32 @@ export default function InputPage(props: InputPageProps) {
 
     if (decklistMatches) {
       const parsedDecklist = parser(decklist);
-      getCollection(parsedDecklist)
-        .then(handleCollectionResponse)
-        .then((t) => getCollection(t as Identifier[]))
-        .then((resp) => setTokens(resp.data.data))
+      const chunked = splitIntoChunks(parsedDecklist, 75);
+      const collections = chunked.map((chunk) => getCollection(chunk));
+      Promise.all(collections)
+        .then((responses) => {
+          const responseData = responses.map((resp) => resp.data.data);
+          const flattenedResp: ScryfallCard[] = flatten(responseData);
+          const acceptedTypes = ['token', 'meld_part'];
+          const onlyTokenMakers = flattenedResp.filter((card) =>
+            Object.keys(card).includes('all_parts'),
+          );
+          const getAllParts = onlyTokenMakers.map((card: ScryfallCard) => {
+            const { all_parts } = card;
+            return all_parts?.filter((related) =>
+              acceptedTypes.includes(related.component),
+            ) as RelatedCard[];
+          });
+          const flattenTokens = flatten(getAllParts);
+          const uniqueIds = new Set(flattenTokens.map((token) => token.id));
+          const prep = Array.from(uniqueIds).map((id) => ({ id }));
+          return getCollection(prep);
+        })
+        .then((resp) => {
+          const foundCards: ScryfallCard[] = resp.data.data;
+          const uniqueOracle = uniqueArray(foundCards, 'oracle_id');
+          setTokens(uniqueOracle);
+        })
         .catch((err: AxiosError) => {
           console.error(err);
           setSnackbar({ in: true, message: err.response?.data });
@@ -133,9 +163,11 @@ export default function InputPage(props: InputPageProps) {
           snackbarControl={setSnackbar}
         />
       </Paper>
-      <div className={classes.tokens}>
-        <TokenDisplay tokens={tokens} />
-      </div>
+      {tokens.length > 0 && (
+        <div className={classes.tokens}>
+          <TokenDisplay tokens={tokens} />
+        </div>
+      )}
     </div>
   );
 }

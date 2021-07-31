@@ -21,7 +21,7 @@ export default function DecklistInput(props: DecklistInputProps) {
         value={currentInput}
         fullWidth
         multiline
-        rows={25}
+        minRows={25}
         variant="outlined"
         label="Enter your decklist"
       />
