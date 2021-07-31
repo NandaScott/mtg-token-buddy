@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Box, Button, makeStyles, Paper } from '@material-ui/core';
 import DecklistInput from 'components/decklist-input/decklist-input';
 import CustomSnackbars from 'components/snackbars/custom-snackbars';
@@ -9,10 +9,7 @@ import {
   uniqueArray,
   validateInput,
 } from 'utils/utils';
-import getCollection, {
-  handleCollectionResponse,
-  Identifier,
-} from 'services/scryfall';
+import getCollection from 'services/scryfall';
 import ScryfallCard, { RelatedCard } from 'interfaces/scryfall-card';
 import { AxiosError } from 'axios';
 import { InputPageProps } from 'pages/input-page/input-page-interfaces';

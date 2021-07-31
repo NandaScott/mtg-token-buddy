@@ -20,10 +20,8 @@ export default async function getCollection(identifiers: Identifier[]) {
 
 export async function handleCollectionResponse(resp: AxiosResponse) {
   return new Promise((res, rej) => {
-    const {
-      not_found,
-      data,
-    }: { data: ScryfallCard[]; not_found: Identifier[] } = resp.data;
+    const { data }: { data: ScryfallCard[]; not_found: Identifier[] } =
+      resp.data;
     const onlyTokenMakers = data.filter((card: ScryfallCard) =>
       Object.keys(card).includes('all_parts'),
     );
