@@ -65,40 +65,59 @@ export default function TokenDisplay(props: TokenDisplayProps) {
     <div className={classes.root}>
       {tokens.map((token) => (
         <Accordion
+          key={`Accordion-${token.id}`}
           expanded={expanded === token.id}
           onChange={handleChange(token.id)}
         >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>{token.name}</Typography>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon key={`ExpandMoreIcon-${token.id}`} />}
+            key={`AccordionSummary-${token.id}`}
+          >
+            <Typography key={`TokenName-${token.id}`}>{token.name}</Typography>
           </AccordionSummary>
-          <AccordionDetails>
+          <AccordionDetails key={`AccordionDetails-${token.id}`}>
             <img
+              key={`Image-${token.id}`}
               src={token.image_uris?.small}
               alt={token.name}
               className={classes.image}
             />
-            <div className={classes.details}>
-              <div className={classes.nameBlock}>
-                <Typography className={classes.name}>{token.name}</Typography>
-                <div>{token.mana_cost}</div>
+            <div className={classes.details} key={`DetailsWrapper-${token.id}`}>
+              <div className={classes.nameBlock} key={`NameBlock-${token.id}`}>
+                <Typography className={classes.name} key={`Name-${token.id}`}>
+                  {token.name}
+                </Typography>
+                <div key={`ManaCost-${token.mana_cost}`}>{token.mana_cost}</div>
               </div>
-              <Typography className={classes.typeLine}>
+              <Typography
+                className={classes.typeLine}
+                key={`Typeline-${token.id}`}
+              >
                 {token.type_line}
               </Typography>
-              <Typography className={classes.oracle}>
+              <Typography
+                className={classes.oracle}
+                key={`OracleText-${token.id}`}
+              >
                 {token.oracle_text || 'No Oracle Text'}
               </Typography>
             </div>
           </AccordionDetails>
-          <AccordionActions>
+          <AccordionActions key={`AccordionActions-${token.id}`}>
             <Button
               color="primary"
               href={`https://scryfall.com/search?q=oracleid:${token.oracle_id}+include:extras&unique=prints&as=grid&order=released`}
               target="_blank"
+              key={`PrintingsButton-${token.id}`}
             >
               Show all printings
             </Button>
-            <Button color="primary" href={token.scryfall_uri} target="_blank">
+            <Button
+              color="primary"
+              href={token.scryfall_uri}
+              target="_blank"
+              key={`ScryfallButton-${token.id}`}
+            >
               Open in Scryfall
             </Button>
           </AccordionActions>
