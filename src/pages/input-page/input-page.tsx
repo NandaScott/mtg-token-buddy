@@ -1,5 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { Box, Button, makeStyles, Paper } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  makeStyles,
+  Paper,
+  CircularProgress,
+} from '@material-ui/core';
 import DecklistInput from 'components/decklist-input/decklist-input';
 import CustomSnackbars from 'components/snackbars/custom-snackbars';
 import {
@@ -59,6 +65,7 @@ export default function InputPage(props: InputPageProps) {
   const [decklist, setDecklist] = useState('');
   const [inputError, setInputError] = useState(false);
   const [tokens, setTokens] = useState<ScryfallCard[]>([]);
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     in: false,
     message: '',
@@ -68,6 +75,7 @@ export default function InputPage(props: InputPageProps) {
     const decklistMatches = validateInput(decklist);
 
     if (decklistMatches) {
+      setLoading(true);
       const parsedDecklist = parser(decklist);
       const chunked = splitIntoChunks(parsedDecklist, 75);
       const collections = chunked.map((chunk) => getCollection(chunk));
@@ -94,6 +102,7 @@ export default function InputPage(props: InputPageProps) {
           const foundCards: ScryfallCard[] = resp.data.data;
           const uniqueOracle = uniqueArray(foundCards, 'oracle_id');
           setTokens(uniqueOracle);
+          setLoading(false);
         })
         .catch((err: AxiosError) => {
           console.error(err);
@@ -150,8 +159,9 @@ export default function InputPage(props: InputPageProps) {
             size="large"
             color="primary"
             className={classes.button}
+            disabled={loading}
           >
-            Submit
+            {loading ? <CircularProgress size={26} /> : 'Submit'}
           </Button>
         </Box>
         <CustomSnackbars
