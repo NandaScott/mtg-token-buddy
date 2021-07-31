@@ -3,9 +3,33 @@ import { Box, Button, makeStyles } from '@material-ui/core';
 import DecklistInput from 'components/decklist-input/decklist-input';
 import CustomSnackbars from 'components/snackbars/custom-snackbars';
 import { parser, validateInput } from 'utils/utils';
-import { InputPageProps } from './input-page-interfaces';
+import getCollection, {
+  handleCollectionResponse,
+  Identifier,
+} from 'services/scryfall';
+import ScryfallCard from 'interfaces/scryfall-card';
+import { AxiosError } from 'axios';
+import { InputPageProps } from 'pages/input-page/input-page-interfaces';
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    [theme.breakpoints.down('sm')]: {
+      flexDirection: 'column',
+    },
+    [theme.breakpoints.up('md')]: {
+      flexDirection: 'row',
+    },
+  },
+  controls: {
+    padding: theme.spacing(4),
+    [theme.breakpoints.up('md')]: {
+      width: '50%',
+    },
+  },
+  tokens: {
+    padding: theme.spacing(4),
+  },
   input: {
     marginBottom: theme.spacing(),
   },
@@ -23,6 +47,7 @@ export default function InputPage(props: InputPageProps) {
   const classes = useStyles();
   const [decklist, setDecklist] = useState('');
   const [inputError, setInputError] = useState(false);
+  const [tokens, setTokens] = useState<ScryfallCard[]>([]);
   const [snackbar, setSnackbar] = useState({
     in: false,
     message: '',
@@ -33,8 +58,14 @@ export default function InputPage(props: InputPageProps) {
 
     if (decklistMatches) {
       const parsedDecklist = parser(decklist);
-      console.log(parsedDecklist);
-      // api call
+      getCollection(parsedDecklist)
+        .then(handleCollectionResponse)
+        .then((t) => getCollection(t as Identifier[]))
+        .then((resp) => setTokens(resp.data.data))
+        .catch((err: AxiosError) => {
+          console.error(err);
+          setSnackbar({ in: true, message: err.response?.data });
+        });
     } else {
       setInputError(true);
       setSnackbar({ in: true, message: 'Format does not match' });
@@ -51,44 +82,53 @@ export default function InputPage(props: InputPageProps) {
     [inputError],
   );
 
+  const handleClear = () => setDecklist('');
+
   return (
-    <Box
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="flex-start"
-      padding={4}
-    >
-      <DecklistInput
-        error={inputError}
-        handleInput={handleInput}
-        currentInput={decklist}
-        className={classes.input}
-      />
-      <Box
-        flexDirection="row"
-        alignItems="flex-start"
-        justifyContent="flex-start"
-        className={classes.buttonWrapper}
-      >
-        <Button variant="outlined" size="large" color="primary">
-          Clear
-        </Button>
-        <Button
-          onClick={validate}
-          fullWidth
-          variant="contained"
-          size="large"
-          color="primary"
-          className={classes.button}
+    <div className={classes.root}>
+      <div className={classes.controls}>
+        <DecklistInput
+          error={inputError}
+          handleInput={handleInput}
+          currentInput={decklist}
+          className={classes.input}
+        />
+        <Box
+          flexDirection="row"
+          alignItems="flex-start"
+          justifyContent="flex-start"
+          className={classes.buttonWrapper}
         >
-          Submit
-        </Button>
-      </Box>
-      <CustomSnackbars
-        open={snackbar.in}
-        message={snackbar.message}
-        snackbarControl={setSnackbar}
-      />
-    </Box>
+          <Button
+            variant="outlined"
+            size="large"
+            color="primary"
+            onClick={handleClear}
+          >
+            Clear
+          </Button>
+          <Button
+            onClick={validate}
+            fullWidth
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+          >
+            Submit
+          </Button>
+        </Box>
+        <CustomSnackbars
+          open={snackbar.in}
+          message={snackbar.message}
+          snackbarControl={setSnackbar}
+        />
+      </div>
+      <div className={classes.tokens}>
+        {tokens.map((card) => (
+          <div>{card.name}</div>
+        ))}
+      </div>
+    </div>
   );
 }

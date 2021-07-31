@@ -23,7 +23,7 @@ export default function DecklistInput(props: DecklistInputProps) {
         multiline
         rows={25}
         variant="outlined"
-        label="Decklist"
+        label="Enter your decklist"
       />
     </Box>
   );
