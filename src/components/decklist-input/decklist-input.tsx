@@ -37,7 +37,6 @@ function DecklistInput(props: DecklistInputProps) {
   const theme = useTheme();
   const { name, value, handleInput, handleKeyDown, error, success, className } =
     props;
-  useRenderDebug(`DecklistInput ${name}`);
 
   const handleAdornment = () => {
     if (error) {
