@@ -6,8 +6,8 @@ import useRenderDebug from 'hooks/useRenderDebug';
 
 interface DecklistInputProps {
   name: string;
-  errors: Record<string, string>;
   value: string;
+  error: string;
   success?: boolean;
   handleKeyDown: (
     name: string,
@@ -35,19 +35,12 @@ const useStyles = makeStyles((theme) => ({
 function DecklistInput(props: DecklistInputProps) {
   const classes = useStyles();
   const theme = useTheme();
-  const {
-    name,
-    value,
-    handleInput,
-    handleKeyDown,
-    errors,
-    success,
-    className,
-  } = props;
+  const { name, value, handleInput, handleKeyDown, error, success, className } =
+    props;
   useRenderDebug(`DecklistInput ${name}`);
 
   const handleAdornment = () => {
-    if (errors[name]) {
+    if (error) {
       return <ErrorIcon color="error" />;
     }
     if (success) {
@@ -61,7 +54,8 @@ function DecklistInput(props: DecklistInputProps) {
     <Box flexGrow={1} className={className}>
       <TextField
         autoFocus
-        error={!!errors[name]}
+        error={!!error}
+        helperText={error}
         onKeyDown={handleKeyDown(name)}
         name={name}
         variant="outlined"
@@ -97,6 +91,9 @@ const areEqual = (
   nextProps: Readonly<React.PropsWithChildren<DecklistInputProps>>,
 ) => {
   if (nextProps.value !== prevProps.value) {
+    return false;
+  }
+  if (nextProps.error !== prevProps.error) {
     return false;
   }
   return true;

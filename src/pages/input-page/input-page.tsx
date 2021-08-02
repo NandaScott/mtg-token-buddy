@@ -171,8 +171,8 @@ export default function InputPage(props: InputPageProps) {
             key={`DecklistInput-${v}`}
             name={v}
             value={decklist[v] ?? ''}
+            error={errors[v]}
             handleKeyDown={handleKeyDown}
-            errors={errors}
             handleInput={handleInput}
             className={classes.input}
           />
