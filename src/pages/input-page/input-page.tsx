@@ -24,7 +24,6 @@ import TokenDisplay from 'components/token-display/token-display';
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
-    backgroundColor: '#e8e8e8',
     [theme.breakpoints.down('sm')]: {
       flexDirection: 'column',
     },
@@ -62,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function InputPage(props: InputPageProps) {
   const classes = useStyles();
-  const [decklist, setDecklist] = useState('');
+  const [decklist, setDecklist] = useState<string[]>([]);
   const [inputError, setInputError] = useState(false);
   const [tokens, setTokens] = useState<ScryfallCard[]>([]);
   const [loading, setLoading] = useState(false);
