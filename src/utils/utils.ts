@@ -1,6 +1,8 @@
 export const parser = (input: string) => {
   const output = input.split('\n').filter((val) => val !== '');
-  const splitEach = output.map((val) => val.match(/[^\dx\s]+/g)?.join(' '));
+  const splitEach = output.map((val) =>
+    val.match(/([^\dx\s][\w\s'.,/-]+)+/g)?.join(' '),
+  );
   const toObjectArray = splitEach.map((val) => ({ name: val }));
   return toObjectArray;
 };
@@ -33,4 +35,8 @@ export function uniqueArray<T>(arr: T[], uniqueBy: keyof T) {
     }
   });
   return result;
+}
+
+export function generateArray(length: number): number[] {
+  return new Array(length).fill(null).map((v, i) => i);
 }

@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Box, makeStyles, TextField, useTheme } from '@material-ui/core';
 import ErrorIcon from '@material-ui/icons/Error';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import { v4 as uuidv4 } from 'uuid';
+import { validateInput } from 'utils/utils';
 
 interface DecklistInputProps {
-  currentInput: string;
-  error?: boolean;
+  currentValues: Record<string, string>;
+  errors: Record<string, string>;
   success?: boolean;
   handleInput: (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
   ) => void;
+  addInput: () => void;
+  addError: (id: string, message: string) => void;
   className?: string;
 }
 
@@ -30,10 +34,19 @@ const useStyles = makeStyles((theme) => ({
 export default function DecklistInput(props: DecklistInputProps) {
   const classes = useStyles();
   const theme = useTheme();
-  const { currentInput, handleInput, error, success, className } = props;
+  const name = useRef(uuidv4());
+  const {
+    currentValues,
+    handleInput,
+    addInput,
+    addError,
+    errors,
+    success,
+    className,
+  } = props;
 
   const handleAdornment = () => {
-    if (error) {
+    if (errors[name.current]) {
       return <ErrorIcon color="error" />;
     }
     if (success) {
@@ -43,12 +56,26 @@ export default function DecklistInput(props: DecklistInputProps) {
     return null;
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      addInput();
+      const isValid = validateInput(currentValues[name.current]);
+      if (!isValid) {
+        addError(name.current, 'Entry is not a valid format');
+      }
+    }
+  };
+
   return (
     <Box flexGrow={1} className={className}>
       <TextField
+        autoFocus
+        error={!!errors[name.current]}
+        onKeyDown={handleKeyDown}
+        name={name.current}
         variant="outlined"
         onChange={handleInput}
-        value={currentInput}
+        value={currentValues[name.current]}
         InputProps={{
           className: classes.input,
           endAdornment: handleAdornment(),
@@ -64,7 +91,6 @@ export default function DecklistInput(props: DecklistInputProps) {
 }
 
 DecklistInput.defaultProps = {
-  error: false,
   success: false,
   className: '',
 };
