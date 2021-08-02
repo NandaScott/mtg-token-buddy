@@ -1,19 +1,20 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Box, makeStyles, TextField, useTheme } from '@material-ui/core';
 import ErrorIcon from '@material-ui/icons/Error';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import { v4 as uuidv4 } from 'uuid';
-import { validateInput } from 'utils/utils';
+import useRenderDebug from 'hooks/useRenderDebug';
 
 interface DecklistInputProps {
-  currentValues: Record<string, string>;
+  name: string;
   errors: Record<string, string>;
+  value: string;
   success?: boolean;
+  handleKeyDown: (
+    name: string,
+  ) => (e: React.KeyboardEvent<HTMLDivElement>) => void;
   handleInput: (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
   ) => void;
-  addInput: () => void;
-  addError: (id: string, message: string) => void;
   className?: string;
 }
 
@@ -31,22 +32,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function DecklistInput(props: DecklistInputProps) {
+function DecklistInput(props: DecklistInputProps) {
   const classes = useStyles();
   const theme = useTheme();
-  const name = useRef(uuidv4());
   const {
-    currentValues,
+    name,
+    value,
     handleInput,
-    addInput,
-    addError,
+    handleKeyDown,
     errors,
     success,
     className,
   } = props;
+  useRenderDebug(`DecklistInput ${name}`);
 
   const handleAdornment = () => {
-    if (errors[name.current]) {
+    if (errors[name]) {
       return <ErrorIcon color="error" />;
     }
     if (success) {
@@ -56,26 +57,16 @@ export default function DecklistInput(props: DecklistInputProps) {
     return null;
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter') {
-      addInput();
-      const isValid = validateInput(currentValues[name.current]);
-      if (!isValid) {
-        addError(name.current, 'Entry is not a valid format');
-      }
-    }
-  };
-
   return (
     <Box flexGrow={1} className={className}>
       <TextField
         autoFocus
-        error={!!errors[name.current]}
-        onKeyDown={handleKeyDown}
-        name={name.current}
+        error={!!errors[name]}
+        onKeyDown={handleKeyDown(name)}
+        name={name}
         variant="outlined"
         onChange={handleInput}
-        value={currentValues[name.current]}
+        value={value}
         InputProps={{
           className: classes.input,
           endAdornment: handleAdornment(),
@@ -94,3 +85,21 @@ DecklistInput.defaultProps = {
   success: false,
   className: '',
 };
+
+/**
+ * Ensures that the text field does not rerender if no props have changed.
+ * @param prevProps The previous props of decklist input
+ * @param nextProps The next props of decklist input
+ * @returns true if the props are the same
+ */
+const areEqual = (
+  prevProps: Readonly<React.PropsWithChildren<DecklistInputProps>>,
+  nextProps: Readonly<React.PropsWithChildren<DecklistInputProps>>,
+) => {
+  if (nextProps.value !== prevProps.value) {
+    return false;
+  }
+  return true;
+};
+
+export default React.memo(DecklistInput, areEqual);

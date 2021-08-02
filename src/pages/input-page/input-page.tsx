@@ -74,52 +74,60 @@ export default function InputPage(props: InputPageProps) {
     message: '',
   });
 
-  // const validate = useCallback(() => {
-  //   const decklistMatches = validateInput(decklist);
+  const validate = useCallback(() => {
+    if (Object.keys(errors).length !== 0) {
+      setSnackbar({
+        in: true,
+        message:
+          'Looks like you still have some errors. Please double check your input before submitting again.',
+      });
+      return;
+    }
 
-  //   if (decklistMatches) {
-  //     setLoading(true);
-  //     const parsedDecklist = parser(decklist);
-  //     const chunked = splitIntoChunks(parsedDecklist, 75);
-  //     const collections = chunked.map((chunk) => getCollection(chunk));
-  //     Promise.all(collections)
-  //       .then((responses) => {
-  //         const responseData = responses.map((resp) => resp.data.data);
-  //         const flattenedResp: ScryfallCard[] = flatten(responseData);
-  //         const acceptedTypes = ['token', 'meld_part'];
-  //         const onlyTokenMakers = flattenedResp.filter((card) =>
-  //           Object.keys(card).includes('all_parts'),
-  //         );
-  //         const getAllParts = onlyTokenMakers.map((card: ScryfallCard) => {
-  //           const { all_parts } = card;
-  //           return all_parts?.filter((related) =>
-  //             acceptedTypes.includes(related.component),
-  //           ) as RelatedCard[];
-  //         });
-  //         const flattenTokens = flatten(getAllParts);
-  //         const uniqueIds = new Set(flattenTokens.map((token) => token.id));
-  //         const prep = Array.from(uniqueIds).map((id) => ({ id }));
-  //         return getCollection(prep);
-  //       })
-  //       .then((resp) => {
-  //         const foundCards: ScryfallCard[] = resp.data.data;
-  //         const uniqueOracle = uniqueArray(foundCards, 'oracle_id');
-  //         setTokens(uniqueOracle);
-  //         setLoading(false);
-  //       })
-  //       .catch((err: AxiosError) => {
-  //         console.error(err);
-  //         setSnackbar({ in: true, message: err.response?.data });
-  //       });
-  //   } else {
-  //     setInputError(true);
-  //     setSnackbar({ in: true, message: 'Format does not match' });
-  //   }
-  // }, [decklist]);
+    setLoading(true);
+    const parseableInput: string = Object.entries(decklist)
+      .map(([k, v]) => v)
+      .join('\n');
+    const parsedDecklist = parser(parseableInput);
+    const chunked = splitIntoChunks(parsedDecklist, 75);
+    const collections = chunked.map((chunk) => getCollection(chunk));
+    Promise.all(collections)
+      .then((responses) => {
+        const responseData = responses.map((resp) => resp.data.data);
+        const flattenedResp: ScryfallCard[] = flatten(responseData);
+        const acceptedTypes = ['token', 'meld_part'];
+        const onlyTokenMakers = flattenedResp.filter((card) =>
+          Object.keys(card).includes('all_parts'),
+        );
+        const getAllParts = onlyTokenMakers.map((card: ScryfallCard) => {
+          const { all_parts } = card;
+          return all_parts?.filter((related) =>
+            acceptedTypes.includes(related.component),
+          ) as RelatedCard[];
+        });
+        const flattenTokens = flatten(getAllParts);
+        const uniqueIds = new Set(flattenTokens.map((token) => token.id));
+        const prep = Array.from(uniqueIds).map((id) => ({ id }));
+        return getCollection(prep);
+      })
+      .then((resp) => {
+        const foundCards: ScryfallCard[] = resp.data.data;
+        const uniqueOracle = uniqueArray(foundCards, 'oracle_id');
+        setTokens(uniqueOracle);
+        setLoading(false);
+      })
+      .catch((err: AxiosError) => {
+        console.error(err);
+        setSnackbar({ in: true, message: err.response?.data });
+      });
+  }, [decklist, errors]);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-      setDecklist({ [e.target.name]: e.target.value });
+      setDecklist((currentDecklist) => ({
+        ...currentDecklist,
+        [e.target.name]: e.target.value,
+      }));
       if (errors[e.target.name]) {
         setErrors(omit(errors, [e.target.name]));
       }
@@ -131,7 +139,7 @@ export default function InputPage(props: InputPageProps) {
     setDecklist(mapValues(decklist, () => ''));
     setTokens([]);
     setErrors({});
-    setNumberOfInputs([0]);
+    setNumberOfInputs(['0']);
   };
 
   const addInput = useCallback(() => {
@@ -142,14 +150,28 @@ export default function InputPage(props: InputPageProps) {
     setErrors((curr) => ({ ...curr, [id]: message }));
   }, []);
 
+  const handleKeyDown = useCallback(
+    (name: string) => (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter') {
+        addInput();
+        const isValid = validateInput(decklist[name]);
+        if (!isValid) {
+          addError(name, 'Entry is not a valid format');
+        }
+      }
+    },
+    [addError, addInput, decklist],
+  );
+
   return (
     <div className={classes.root}>
       <Paper component="div" className={classes.controls}>
-        {numberOfInputs.map(() => (
+        {numberOfInputs.map((v) => (
           <DecklistInput
-            addInput={addInput}
-            addError={addError}
-            currentValues={decklist}
+            key={`DecklistInput-${v}`}
+            name={v}
+            value={decklist[v] ?? ''}
+            handleKeyDown={handleKeyDown}
             errors={errors}
             handleInput={handleInput}
             className={classes.input}
@@ -170,7 +192,7 @@ export default function InputPage(props: InputPageProps) {
             Clear
           </Button>
           <Button
-            // onClick={validate}
+            onClick={validate}
             fullWidth
             variant="contained"
             size="large"

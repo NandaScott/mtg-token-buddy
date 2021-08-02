@@ -83,6 +83,7 @@
     "no-dupe-class-members": "off",
     "@typescript-eslint/no-dupe-class-members": ["error"],
     "camelcase": "off",
-    "indent": "off"
+    "indent": "off",
+    "no-plusplus":"off"
   }
 }

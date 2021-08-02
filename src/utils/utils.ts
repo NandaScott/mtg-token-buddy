@@ -37,6 +37,6 @@ export function uniqueArray<T>(arr: T[], uniqueBy: keyof T) {
   return result;
 }
 
-export function generateArray(length: number): number[] {
-  return new Array(length).fill(null).map((v, i) => i);
+export function generateArray(length: number): string[] {
+  return new Array(length).fill(null).map((v, i) => i.toString());
 }
