@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, makeStyles, TextField, useTheme } from '@material-ui/core';
 import ErrorIcon from '@material-ui/icons/Error';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import useRenderDebug from 'hooks/useRenderDebug';
 
 interface DecklistInputProps {
   name: string;
@@ -50,7 +49,7 @@ function DecklistInput(props: DecklistInputProps) {
   };
 
   return (
-    <Box flexGrow={1} className={className}>
+    <Box flexGrow={1} marginY={0.5} className={className}>
       <TextField
         autoFocus
         error={!!error}

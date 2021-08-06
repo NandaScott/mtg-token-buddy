@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   controls: {
+    height: 'fit-content',
     padding: theme.spacing(2),
     margin: theme.spacing(4),
     display: 'flex',
@@ -48,9 +49,6 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('md')]: {
       width: '50%',
     },
-  },
-  input: {
-    marginBottom: theme.spacing(),
   },
   buttonWrapper: {
     display: 'flex',
@@ -114,12 +112,12 @@ export default function InputPage(props: InputPageProps) {
         const foundCards: ScryfallCard[] = resp.data.data;
         const uniqueOracle = uniqueArray(foundCards, 'oracle_id');
         setTokens(uniqueOracle);
-        setLoading(false);
       })
       .catch((err: AxiosError) => {
         console.error(err);
-        setSnackbar({ in: true, message: err.response?.data });
-      });
+        setSnackbar({ in: true, message: err.response?.data.details });
+      })
+      .finally(() => setLoading(false));
   }, [decklist, errors]);
 
   const handleInput = useCallback(
@@ -154,6 +152,7 @@ export default function InputPage(props: InputPageProps) {
     (name: string) => (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === 'Enter') {
         addInput();
+        if (decklist[name] === undefined) return;
         const isValid = validateInput(decklist[name]);
         if (!isValid) {
           addError(name, 'Entry is not a valid format');
@@ -165,7 +164,7 @@ export default function InputPage(props: InputPageProps) {
 
   return (
     <div className={classes.root}>
-      <Paper component="div" className={classes.controls}>
+      <Paper className={classes.controls}>
         {numberOfInputs.map((v) => (
           <DecklistInput
             key={`DecklistInput-${v}`}
@@ -174,7 +173,6 @@ export default function InputPage(props: InputPageProps) {
             error={errors[v]}
             handleKeyDown={handleKeyDown}
             handleInput={handleInput}
-            className={classes.input}
           />
         ))}
         <Box
@@ -203,17 +201,17 @@ export default function InputPage(props: InputPageProps) {
             {loading ? <CircularProgress size={26} /> : 'Submit'}
           </Button>
         </Box>
-        <CustomSnackbars
-          open={snackbar.in}
-          message={snackbar.message}
-          snackbarControl={setSnackbar}
-        />
       </Paper>
       {tokens.length > 0 && (
         <div className={classes.tokens}>
           <TokenDisplay tokens={tokens} />
         </div>
       )}
+      <CustomSnackbars
+        open={snackbar.in}
+        message={snackbar.message}
+        snackbarControl={setSnackbar}
+      />
     </div>
   );
 }
