@@ -16,7 +16,7 @@ import {
   uniqueArray,
   validateInput,
 } from 'utils/utils';
-import getCollection from 'services/scryfall';
+import getCollection, { WithName } from 'services/scryfall';
 import ScryfallCard, { RelatedCard } from 'interfaces/scryfall-card';
 import { AxiosError } from 'axios';
 import { InputPageProps } from 'pages/input-page/input-page-interfaces';
@@ -73,7 +73,10 @@ export default function InputPage(props: InputPageProps) {
   });
 
   const validate = useCallback(() => {
-    if (Object.keys(errors).length !== 0) {
+    if (
+      Object.keys(errors).length !== 0 &&
+      process.env.NODE_ENV !== 'development'
+    ) {
       setSnackbar({
         in: true,
         message:
@@ -91,8 +94,32 @@ export default function InputPage(props: InputPageProps) {
     const collections = chunked.map((chunk) => getCollection(chunk));
     Promise.all(collections)
       .then((responses) => {
-        const responseData = responses.map((resp) => resp.data.data);
-        const flattenedResp: ScryfallCard[] = flatten(responseData);
+        const axiosData = responses.map((resp) => resp.data);
+        const scryfallData = axiosData.map((resp) => resp.data);
+        const respErrors = axiosData.map(
+          (resp) => resp.not_found as WithName[],
+        );
+        if (respErrors.length > 0) {
+          const erroredEntries = flatten(respErrors).map(
+            (val) => val.name,
+          ) as string[];
+          const newErrors = Object.entries(decklist)
+            .map(([index, value]) => {
+              for (let i = 0; i < erroredEntries.length; i++) {
+                const bar = erroredEntries[i];
+                if (value.includes(bar)) {
+                  return {
+                    [index]:
+                      'Scryfall could not find this card. Please double check your spelling and try again.',
+                  };
+                }
+              }
+              return {};
+            })
+            .reduce((acc, curr) => ({ ...acc, ...curr }), {});
+          setErrors((curr) => ({ ...curr, ...newErrors }));
+        }
+        const flattenedResp: ScryfallCard[] = flatten(scryfallData);
         const acceptedTypes = ['token', 'meld_part'];
         const onlyTokenMakers = flattenedResp.filter((card) =>
           Object.keys(card).includes('all_parts'),

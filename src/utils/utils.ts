@@ -40,3 +40,7 @@ export function uniqueArray<T>(arr: T[], uniqueBy: keyof T) {
 export function generateArray(length: number): string[] {
   return new Array(length).fill(null).map((v, i) => i.toString());
 }
+
+export function reduceObjectArray(array: Record<string, unknown>[]) {
+  return array.reduce((acc, curr, index) => ({ ...acc, ...curr }), {});
+}

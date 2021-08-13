@@ -1,20 +1,35 @@
 import axios, { AxiosResponse } from 'axios';
 import ScryfallCard, { RelatedCard } from 'interfaces/scryfall-card';
+import { GetCollectionResponse } from 'interfaces/scryfall-responses';
 
 /* eslint-disable camelcase */
 const BASE_URL = 'https://api.scryfall.com';
 
-export type Identifier =
-  | { id: string }
-  | { mtgo_id: number }
-  | { multiverse_id: number }
-  | { oracle_id: string }
-  | { illustration_id: string }
-  | { name: string | undefined }
-  | { name: string; set: string }
-  | { collector_number: string; set: string };
+export type WithId = { id: string };
+export type WithMTGOId = { mtgo_id: number };
+export type WithMultiverseId = { multiverse_id: number };
+export type WithOracleId = { oracle_id: string };
+export type WithIllustrationId = { illustration_id: string };
+export type WithName = { name: string | undefined };
+export type WithNameAndSet = { name: string; set: string };
+export type WithCollectorNumberAndSet = {
+  collector_number: string;
+  set: string;
+};
 
-export default async function getCollection(identifiers: Identifier[]) {
+export type Identifier =
+  | WithId
+  | WithMTGOId
+  | WithMultiverseId
+  | WithOracleId
+  | WithIllustrationId
+  | WithName
+  | WithNameAndSet
+  | WithCollectorNumberAndSet;
+
+export default async function getCollection(
+  identifiers: Identifier[],
+): Promise<AxiosResponse<GetCollectionResponse>> {
   return axios.post(`${BASE_URL}/cards/collection`, { identifiers });
 }
 
