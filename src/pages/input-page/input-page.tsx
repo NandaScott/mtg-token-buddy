@@ -44,17 +44,38 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   buttonWrapper: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(12, 1fr)',
+    gridGap: theme.spacing(),
     margin: theme.spacing(1, 0),
   },
-  button: {
-    flexGrow: 1,
-    marginLeft: theme.spacing(),
+  clearButton: {
+    [theme.breakpoints.up('md')]: {
+      gridColumn: '1 / 3',
+    },
+    [theme.breakpoints.down('sm')]: {
+      gridColumn: '1 / 7',
+    },
+  },
+  cleanButton: {
+    [theme.breakpoints.up('md')]: {
+      gridColumn: '3 / 5',
+    },
+    [theme.breakpoints.down('sm')]: {
+      gridColumn: '7 / 13',
+    },
+  },
+  submitButton: {
+    [theme.breakpoints.up('md')]: {
+      gridColumn: '5 / 13',
+    },
+    [theme.breakpoints.down('sm')]: {
+      gridColumn: '1 / 13',
+    },
   },
   customIconButton: {
-    flexGrow: 1,
-    marginLeft: theme.spacing(),
-    paddingRight: theme.spacing(3.125),
+    // marginLeft: theme.spacing(),
+    // paddingRight: theme.spacing(3.125),
   },
   largeIcon: {
     display: 'inherit',
@@ -167,6 +188,7 @@ export default function InputPage(props: InputPageProps) {
             size="large"
             color="primary"
             onClick={handleClear}
+            className={classes.clearButton}
           >
             Clear
           </Button>
@@ -174,7 +196,7 @@ export default function InputPage(props: InputPageProps) {
             variant="outlined"
             color="secondary"
             size="large"
-            className={classes.customIconButton}
+            className={classes.cleanButton}
             classes={{
               iconSizeLarge: classes.largeIcon,
             }}
@@ -189,7 +211,7 @@ export default function InputPage(props: InputPageProps) {
             variant="contained"
             size="large"
             color="primary"
-            className={classes.button}
+            className={classes.submitButton}
             disabled={loading}
           >
             {loading ? <CircularProgress size={26} /> : 'Submit'}
